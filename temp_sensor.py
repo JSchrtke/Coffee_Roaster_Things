@@ -1,20 +1,21 @@
 import sys
 import time
+import matplotlib.pyplot as plt
 
 from Phidget22.Phidget import *
 from Phidget22.Devices.TemperatureSensor import *
 from Phidget22.PhidgetException import *
 
 
-def storeTemperatureData(time, temperature, storage_list):
+def storeTemperatureData(time, temperature, storage_list_x, storage_list_y):
     """
     * Stores the data, time and temperature pairs, in a given list
     * time: the time associated with a temperature measurement
     * temperature: the temperature measured
     * storage_list: a particular list used for storing the data Tuples
     """
-    data_tuple = time, temperature
-    storage_list.append(data_tuple)
+    storage_list_x.append(time)
+    storage_list_y.append(temperature)
 
 
 def displayError(e):
@@ -41,7 +42,7 @@ def onAttachHandler(self):
 
     try:
         tempPhidget.setTemperatureChangeTrigger(0.0)
-        tempPhidget.setDataInterval(250)
+        tempPhidget.setDataInterval(50)
     except PhidgetException as e:
         print("\nError while setting the attach handler!")
         displayError(e)
@@ -55,9 +56,9 @@ def onTemperatureChangeHandler(self, temperature):
     
     # prints a percentage value to let the user know how much data has been 
     # collected during collection
-    print("\r" + str(round((time_now / sample_time * 100), 2)) + "%" + "...", end = " ")
+    print("\r" + str(round((time_now / sample_time * 100), 3)) + "%" + "...", end = " ")
 
-    storeTemperatureData(time_now, temperature, test_storage)
+    storeTemperatureData(time_now, temperature, test_storage_x, test_storage_y)
 
 
 # Creating an instance of the TemperatureSensor object
@@ -70,11 +71,11 @@ tempSens.setChannel(0)
 
 # Setting a starting time for timestamp use later
 time_start = time.time()
-it = 0
 
 # Test list for storing the time and temp data, need to be removed and replaced
 # when implementing future storage/plotting system
-test_storage = []
+test_storage_x = []
+test_storage_y = []
 
 # Setting the AttachHandler and TempChangeHandler to the previously defined 
 # functions
@@ -104,12 +105,13 @@ while True:
 print("Attached!")
 
 # Setting the time data will be sampled for
-sample_time = 60
+sample_time = 10
 print("Sampling data for " + str(sample_time) + " seconds...")
 
 # This sleep timer suspeds the further execution of the program until the data 
 # collection has finished
-time.sleep(60)
+time.sleep(sample_time)
+
 # Newline here is needed because of the way the progress counter works, see 
 # in def of onTemperatureChangeHandler
 print("\r100"+ "%" + "...")
@@ -120,8 +122,18 @@ print("Cleaning up...")
 tempSens.setOnTemperatureChangeHandler(None)
 print("Done cleaning up.")
 
+#TESTING-----------------------------------------------------------------------
 # Printing the storage list as a test
-print(test_storage)
+print(test_storage_x)
+print(test_storage_y)
+plt.plot(test_storage_x, test_storage_y)
+plt.xlabel("time in s")
+plt.ylabel("temperature in C")
+ax = plt.gca()
+#ax.set_ylim([0, 500])
+ax.set_xlim([0, sample_time])
+plt.show()
+#END---------------------------------------------------------------------------
 
 # Wait's for the user to press Enter, or any key really, to terminate the 
 # program
