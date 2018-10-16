@@ -27,10 +27,10 @@ class Threading(threading.Thread):
         self.method = method
 
     def run(self):
-        print("starting " + self.thread_name)
+        print("\nstarting " + self.thread_name)
         print(str(self.thread_name) + " called: " + str(self.method))
         self.method()
-        print("terminating " + self.thread_name)
+        print("\nterminating " + self.thread_name)
 
 
 class LivePlot():
@@ -49,7 +49,8 @@ class LivePlot():
         self.ax.plot(self.time_storage, self.temp_storage, color='blue', linestyle='-', lw=1)
 
     def set_animation(self):
-        anim = animation.FuncAnimation(self.fig, self.update_live_plot, interval=1000, frames=self.sample_time)
+        anim = animation.FuncAnimation(self.fig, self.update_live_plot, interval=1000,
+                                       frames=self.sample_time)
         return anim
 
     def plot(self):
@@ -146,7 +147,15 @@ def yes_no_menu(default):
     raise InputError("Invalid input!")
 
 
-def save_profile_to_file(file_name, time_storage, temperature_storage):
+def save_profile_to_file(file_name, time_storage, temperature_storage, plot_save_flag):
+    """
+    * Saves the current temperature to file
+    * args:
+    \t- file_name: name and/or path for the file to be saved
+    \t- time_storage: array for storing time values
+    \t- temperature_storage: array for storing temperature values
+    \t- plot_save_flag: wether or not an image of a plot has to be saved
+    """
     try:
         with open("C:\\Users\\Joharnis\\Desktop\\Coffee Roaster Testing\\data\\" + str(file_name)
                   + ".txt", "w") as filehandle:
@@ -161,6 +170,10 @@ def save_profile_to_file(file_name, time_storage, temperature_storage):
 
                 filehandle.write("\n")
                 filehandle.close()
+                # Checking if an image of a plot needs to be saved
+                if plot_save_flag is True:
+                    plt.savefig("C:\\Users\\Joharnis\\Desktop\\Coffee Roaster Testing\\data\\"
+                                + str(file_name) + ".png", format='png')
     except Exception as e:
         display_error(e)
 
@@ -178,10 +191,9 @@ def main():
     temp_sens.setOnAttachHandler(on_attach_handler)
     temp_sens.setOnTemperatureChangeHandler(on_temperature_change_handler)
 
-
     # Waiting for the phidget to be attached
     while True:
-        print("Opening an waiting for Attachement...")
+        print("\nOpening an waiting for Attachement...")
         try:
             temp_sens.openWaitForAttachment(5000)
             break
@@ -189,7 +201,7 @@ def main():
             print("\nError in attachement event!")
             display_error(e)
     print("Attached!")
-    print("Sampling data for " + str(sample_time) + " seconds...")
+    print("Sampling data for " + str(sample_time) + " seconds...\n")
 
     # This sleep timer suspeds the further execution of the program
     # until the data collection has finished
@@ -199,7 +211,7 @@ def main():
     print("Done sampling...")
 
     # Clearing the TemperatureChangeHandler
-    print("Cleaning up...")
+    print("\nCleaning up...")
     temp_sens.setOnTemperatureChangeHandler(None)
     print("Done cleaning up.")
 
@@ -208,7 +220,8 @@ def main():
         try:
             yes_no = yes_no_menu(-1)
             if yes_no is True:
-                save_profile_to_file(input("Enter filename: \n"), test_storage_x, test_storage_y)
+                save_profile_to_file(input("Enter filename: \n"), test_storage_x, test_storage_y,
+                                     plot_save_flag)
                 print("saving...")
                 time.sleep(1)
                 break
@@ -221,7 +234,7 @@ def main():
             continue
 
     # Wait's for the user to press Enter, or any key really, to terminate the program
-    input("Press Enter to exit:\n")
+    input("\nPress Enter to exit\n")
 
 
 # Test list for storing the time and temp data, need to be removed and replaced when implementing
@@ -238,7 +251,7 @@ sample_time = 10
 # Live plot yes or no
 while True:
     try:
-        print("Plot data live? [y/n]")
+        print("Plot data? [y/n]")
         yes_no = yes_no_menu(-1)
         if yes_no is True:
             # Setting a starting time for timestamp use later
@@ -248,11 +261,19 @@ while True:
             main_thread = Threading(1, "main-method-thread", main)
             main_thread.start()
 
+            # Flag to save the plot
+            plot_save_flag = True
+
             # Starting the plotting
             live_plot = LivePlot(sample_time, test_storage_x, test_storage_y)
             live_plot.plot()
             break
         elif yes_no is False:
+            # Setting a starting time for timestamp use later
+            time_start = time.time()
+
+            plot_save_flag = False
+
             # Starting the main logic in the main(default) thread
             main()
             break
