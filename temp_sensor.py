@@ -3,6 +3,7 @@ import time
 import threading
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 from Phidget22.Phidget import *
 from Phidget22.Devices.TemperatureSensor import *
@@ -32,6 +33,31 @@ class Threading(threading.Thread):
         print("terminating " + self.thread_name)
 
 
+class LivePlot():
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.set_xlabel("T(s)")
+    ax.set_ylabel("t(°C)")
+
+    def __init__(self, sample_time, time_storage, temp_storage):
+        self.sample_time = sample_time
+        self.time_storage = time_storage
+        self.temp_storage = temp_storage
+
+    def update_live_plot(self, i):
+        self.ax.plot(self.time_storage, self.temp_storage, color='blue', linestyle='-', lw=1)
+
+    def set_animation(self):
+        anim = animation.FuncAnimation(self.fig, self.update_live_plot, interval=1000, frames=self.sample_time)
+        return anim
+
+    def plot(self):
+        anim = self.set_animation()
+        anim
+        plt.show()
+
+
 def store_temp_data(time, temp, time_storage, temp_storage):
     """
     * Stores temperature and time data in two corresponding lists
@@ -58,6 +84,8 @@ def display_error(self):
         sys.stderr.write("\nThis error most likely occurs because the Phidget isn't properly"
                          "attached to the computer. Please check the connection and try again. ")
         input("\nPress enter to continue.\n")
+    else:
+        sys.stderr.write("\n Unknown exception! ")
 
 
 def on_attach_handler(self):
@@ -137,6 +165,65 @@ def save_profile_to_file(file_name, time_storage, temperature_storage):
         display_error(e)
 
 
+def main():
+    # Setting the AttachHandler and TempChangeHandler to the previously defined functions
+    """
+    Setting the onTemperatureChangeHandler is necessary, even if the defined handler doesn't
+    any code in it's body. For the program be able to return a temperature via any method
+    (specifically the getTemperature() method), it is necessary to set the
+    onTemperatureChangeHandler, wait for atleast one DataInterval and then un-set the
+    onTemperatureChangeHandler in order for the program to have atleast one temperature value to
+    return. Otherwise, methods that try to return the temperature will throw an exception
+    """
+    temp_sens.setOnAttachHandler(on_attach_handler)
+    temp_sens.setOnTemperatureChangeHandler(on_temperature_change_handler)
+
+
+    # Waiting for the phidget to be attached
+    while True:
+        print("Opening an waiting for Attachement...")
+        try:
+            temp_sens.openWaitForAttachment(5000)
+            break
+        except PhidgetException as e:
+            print("\nError in attachement event!")
+            display_error(e)
+    print("Attached!")
+    print("Sampling data for " + str(sample_time) + " seconds...")
+
+    # This sleep timer suspeds the further execution of the program
+    # until the data collection has finished
+    time.sleep(sample_time)
+
+    print("\r100" + "%" + "...")
+    print("Done sampling...")
+
+    # Clearing the TemperatureChangeHandler
+    print("Cleaning up...")
+    temp_sens.setOnTemperatureChangeHandler(None)
+    print("Done cleaning up.")
+
+    while True:
+        print("\nSave current data? [y/n]")
+        try:
+            yes_no = yes_no_menu(-1)
+            if yes_no is True:
+                save_profile_to_file(input("Enter filename: \n"), test_storage_x, test_storage_y)
+                print("saving...")
+                time.sleep(1)
+                break
+            elif yes_no is False:
+                break
+            else:
+                pass
+        except InputError as e:
+            print("An Error occured!")
+            continue
+
+    # Wait's for the user to press Enter, or any key really, to terminate the program
+    input("Press Enter to exit:\n")
+
+
 # Test list for storing the time and temp data, need to be removed and replaced when implementing
 # future storage/plotting system
 test_storage_x = []
@@ -145,65 +232,33 @@ test_storage_y = []
 # Creating an instance of the TemperatureSensor object
 temp_sens = TemperatureSensor()
 
-# Setting a starting time for timestamp use later
-time_start = time.time()
-
-
 # Setting the time data will be sampled for
-sample_time = 900
+sample_time = 10
 
-# Setting the AttachHandler and TempChangeHandler to the previously defined functions
-"""
-Setting the onTemperatureChangeHandler is necessary, even if the defined handler doesn't
-any code in it's body. For the program be able to return a temperature via any method
-(specifically the getTemperature() method), it is necessary to set the
-onTemperatureChangeHandler, wait for atleast one DataInterval and then un-set the
-onTemperatureChangeHandler in order for the program to have atleast one temperature value to
-return. Otherwise, methods that try to return the temperature will throw an exception
-"""
-temp_sens.setOnAttachHandler(on_attach_handler)
-temp_sens.setOnTemperatureChangeHandler(on_temperature_change_handler)
-
-
-# Waiting for the phidget to be attached
+# Live plot yes or no
 while True:
-    print("Opening an waiting for Attachement...")
     try:
-        temp_sens.openWaitForAttachment(5000)
-        break
-    except PhidgetException as e:
-        print("\nError in attachement event!")
-        display_error(e)
-print("Attached!")
-print("Sampling data for " + str(sample_time) + " seconds...")
-
-# This sleep timer suspeds the further execution of the program
-# until the data collection has finished
-time.sleep(sample_time)
-
-print("\r100" + "%" + "...")
-print("Done sampling...")
-
-# Clearing the TemperatureChangeHandler
-print("Cleaning up...")
-temp_sens.setOnTemperatureChangeHandler(None)
-print("Done cleaning up.")
-
-while True:
-    print("\nSave current data? [y/n]")
-    try:
+        print("Plot data live? [y/n]")
         yes_no = yes_no_menu(-1)
         if yes_no is True:
-            save_profile_to_file(input("Enter filename: \n"), test_storage_x, test_storage_y)
-            print("saving...")
-            time.sleep(1)
+            # Setting a starting time for timestamp use later
+            time_start = time.time()
+
+            # Starting the main logic of the program in a second thread
+            main_thread = Threading(1, "main-method-thread", main)
+            main_thread.start()
+
+            # Starting the plotting
+            live_plot = LivePlot(sample_time, test_storage_x, test_storage_y)
+            live_plot.plot()
             break
         elif yes_no is False:
+            # Starting the main logic in the main(default) thread
+            main()
             break
         else:
+            print("Invalid input!")
             pass
     except InputError as e:
-        pass
-
-# Wait's for the user to press Enter, or any key really, to terminate the program
-input("Press Enter to exit:\n")
+        print("Invalid input!")
+        continue
