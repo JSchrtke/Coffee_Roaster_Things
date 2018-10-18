@@ -1,3 +1,8 @@
+# TODO: create method in RoastProfile for creating a reference profile
+#          * Reference profiles have to be dynamic in length
+# TODO: create method in RoastProfile for importing a reference profile
+# TODO: create method in RoastProfile for comparing live_profile to reference_profile
+
 import sys
 import time
 import threading
@@ -5,9 +10,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-from Phidget22.Phidget import *
-from Phidget22.Devices.TemperatureSensor import *
-from Phidget22.PhidgetException import *
+from Phidget22.Phidget import Phidget
+from Phidget22.Devices.TemperatureSensor import TemperatureSensor
+from Phidget22.PhidgetException import PhidgetException, ErrorCode
 
 
 class InputError(Exception):
@@ -31,6 +36,61 @@ class Threading(threading.Thread):
         print(str(self.thread_name) + " called: " + str(self.method))
         self.method()
         print("\nterminating " + self.thread_name)
+
+
+class RoastProfile():
+    time_storage = []
+    temp_storage = []
+    # Reference roast profile
+    reference_time_storage = [0, 1, 2, 4]
+    reference_temp_storage = [25, 25, 25, 25]
+
+    def __init__(self, instance_name, save_folder_path):
+        """
+        * creates list's for time and temperature storage
+        * gives the instance a name; name will be used as filename for saved files
+        * instance_name: name for the current instance, will be used as the filename when saving
+            the profile to file
+        * save_folder_path: link to a folder path the profile shall be saved in
+        """
+        self.instance_name = str(instance_name)
+        self.save_folder_path = (save_folder_path)
+
+    def create_reference_profile(self):
+        """
+        * method for creating a reference profile via a regression from 5(ish) tuples of
+            time/temp data
+        """
+        data_point_count = 5
+
+        for i in range(data_point_count):
+            # some logic that creates the profile
+            pass
+
+    def import_reference_profile(self, path_to_file):
+        pass
+
+    def store_temp_data(self, time_data, temp_data):
+        self.time_storage.append(time_data)
+        self.temp_storage.append(temp_data)
+
+    def save_profile_to_file(self, plot_save_flag):
+        """
+        * Saves the current profile to file
+        """
+        try:
+            with open(self.save_folder_path + self.instance_name + ".txt", "w") as filehandle:
+                for time_value in self.time_storage:
+                    filehandle.write("%s\n" % time_value)
+
+                for temp_value in self.temp_storage:
+                    filehandle.write("%s\n" % temp_value)
+
+                if plot_save_flag is True:
+                    plt.savefig(self.save_folder_path + self.instance_name
+                                + ".png", format='png')
+        except Exception as e:
+            display_error(e)
 
 
 class LivePlot():
@@ -57,17 +117,6 @@ class LivePlot():
         anim = self.set_animation()
         anim
         plt.show()
-
-
-def store_temp_data(time, temp, time_storage, temp_storage):
-    """
-    * Stores temperature and time data in two corresponding lists
-    * args:
-        - time: the time associated with a temperature measurement
-        - temp: the temperature measured
-    """
-    time_storage.append(time)
-    temp_storage.append(temp)
 
 
 def display_error(self):
@@ -125,7 +174,7 @@ def on_temperature_change_handler(self, temp):
     print("\r" + str(round((time_now / sample_time * 100), 3)) + "%"
           + "...\tTime: " + str(round(time_now, 2)) + "s\tTemperature: "
           + str(round(temp, 2)) + "°C", end=" ")
-    store_temp_data(time_now, temp, test_storage_x, test_storage_y)
+    live_profile.store_temp_data(time_now, temp)
 
 
 def yes_no_menu(default):
@@ -145,37 +194,6 @@ def yes_no_menu(default):
         return True
 
     raise InputError("Invalid input!")
-
-
-def save_profile_to_file(file_name, time_storage, temperature_storage, plot_save_flag):
-    """
-    * Saves the current temperature to file
-    * args:
-    \t- file_name: name and/or path for the file to be saved
-    \t- time_storage: array for storing time values
-    \t- temperature_storage: array for storing temperature values
-    \t- plot_save_flag: wether or not an image of a plot has to be saved
-    """
-    try:
-        with open("C:\\Users\\Joharnis\\Desktop\\Coffee Roaster Testing\\data\\" + str(file_name)
-                  + ".txt", "w") as filehandle:
-
-                for time_value in time_storage:
-                    filehandle.write("%s\n" % time_value)
-
-                filehandle.write("\n")
-
-                for temp_value in temperature_storage:
-                    filehandle.write("%s\n" % temp_value)
-
-                filehandle.write("\n")
-                filehandle.close()
-                # Checking if an image of a plot needs to be saved
-                if plot_save_flag is True:
-                    plt.savefig("C:\\Users\\Joharnis\\Desktop\\Coffee Roaster Testing\\data\\"
-                                + str(file_name) + ".png", format='png')
-    except Exception as e:
-        display_error(e)
 
 
 def main():
@@ -220,8 +238,7 @@ def main():
         try:
             yes_no = yes_no_menu(-1)
             if yes_no is True:
-                save_profile_to_file(input("Enter filename: \n"), test_storage_x, test_storage_y,
-                                     plot_save_flag)
+                live_profile.save_profile_to_file(plot_save_flag)
                 print("saving...")
                 time.sleep(1)
                 break
@@ -239,8 +256,8 @@ def main():
 
 # Test list for storing the time and temp data, need to be removed and replaced when implementing
 # future storage/plotting system
-test_storage_x = []
-test_storage_y = []
+live_profile = RoastProfile(input("Input a name for this instance:\n"),
+                            "C:\\Users\\Joharnis\\Desktop\\Coffee Roaster Testing\\data\\")
 
 # Creating an instance of the TemperatureSensor object
 temp_sens = TemperatureSensor()
@@ -265,7 +282,8 @@ while True:
             plot_save_flag = True
 
             # Starting the plotting
-            live_plot = LivePlot(sample_time, test_storage_x, test_storage_y)
+            live_plot = LivePlot(sample_time, RoastProfile.time_storage,
+                                 RoastProfile.temp_storage)
             live_plot.plot()
             break
         elif yes_no is False:
