@@ -263,7 +263,7 @@ live_profile = RoastProfile(input("Input a name for this instance:\n"),
 temp_sens = TemperatureSensor()
 
 # Setting the time data will be sampled for
-sample_time = 10
+sample_time = int(input("Enter time to sample data in seconds:\n"))
 
 # Live plot yes or no
 while True:
