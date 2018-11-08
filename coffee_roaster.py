@@ -1,3 +1,6 @@
+# import sys module
+import sys
+
 # import time module
 import time
 
@@ -39,18 +42,15 @@ class Threading(threading.Thread):
         # set method that the thread will run
         self.method_thread_runs = method_thread_runs
 
-Exception.code
-# create ExitException class
-class ExitException(Exception):
-    pass  # TODO: remove pass once ExitException class is done
 
-
-# TODO: create TempProbeCantAttachException class
+# create TempProbeCantAttachException class
 class TempProbeCantAttachException(Exception):
-    pass  # TODO: remove pass once TempProbeCantAttachException class is done
+    def __init__(self, message):
+        self.code = 1
+        self.details = message
 
 
-# TODO: create RoastProfile class
+# create RoastProfile class
 class RoastProfile():
     # TODO: create variable to store the largest time value in the reference profile
     #       Is there a list operation I can use to find the largest time value? Or do I just use
@@ -123,6 +123,33 @@ class RoastProfile():
     # TODO: return to main menu
     pass  # TODO: remove pass once RoastProfile class is done
 
+
+# create method to display exception errors
+def display_error(self):
+    # create variable to hold the exception passed to the function
+    e = self
+    # open try/except to catch exceptions caused by them not having 'code' or 'details'
+    try:
+        pass
+        # create variable that holds the error code, if it exists; init as False
+        e_code = False
+        # set error code variable to the exceptions error code
+        e_code = e.code
+        # write error code to console via stderr.write
+        sys.stderr.write("Code: " + str(e_code))
+        # create variable that holds the error details, if they exist; init as False
+        e_details = False
+        # set error detail variable to exceptions error details
+        e_details = e.details
+        # write error details to console via stderr.write
+        sys.stderr.write("Details: " + str(e_details))
+    except:
+        # if an exception occured; the exception doesn't have e.code or e.details, write the
+        # exception to console via stderr.write
+        if e_code is False and e_details is False:
+            sys.stderr.write("Error: " + str(e))
+        else:
+            sys.stderr.write("Unknown exception occured!")
 
 # define the on_attach_handler
 def on_attach_handler(self):
@@ -210,7 +237,7 @@ def main_menu():
             is_menu_loop_running = False
         elif user_menu_choice == 4:
             # menu option 4: exit program
-            raise ExitException("You chose to exit the program")  # TODO: check if this is the right way to raise exceptions in Python. Maybe create cutom exception class as a child of the base Exception class to be able to quite the program
+            raise SystemExit("\nYou chose to exit the program\nExiting...")
         else:
             print("Invalid input!")
             continue
@@ -241,9 +268,10 @@ def main():
             # open the channel and wait for the attachment event
             temp_sens.openWaitForAttachment(5000)
             attachment_loop_is_running = False  # attachement was successfull
-        except PhidgetException:
+        except PhidgetException as e:
             # if the attachment failed, tell the user it failed
             print("Error in attachment event!")
+            display_error(e)  # TODO: create display_error method
             attachement_tries_counter += 1
             # tell the user you are retrying to attach the probe
             print("retrying attachment, try # " + str(attachement_tries_counter) + "/3...")
@@ -297,7 +325,7 @@ while is_base_thread_running is True:
             main_thread = Threading(1, "main-method-thread", main)
             main_thread.start()
             pass  # TODO: remove pass once try block is done
-        except ExitException:
+        except SystemExit:
             # TODO: create exit logic
             pass  # TODO: remove pass once exit exception thing is done
         except PhidgetException:
