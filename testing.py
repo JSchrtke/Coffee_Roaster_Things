@@ -1,28 +1,3 @@
-import sys
-
-
-def test_function():
-    print("test_function was called!")
-    print("raising SystemExit!")
-    raise SystemExit("raised SystemExit!\nExiting...")
-    print("This line should not be printed anymore, since it is invoked after the exception is"
-          + " " + "raised")
-
-
-def display_error(self):
-    e = self
-    sys.stderr.write("Error: " + str(e))
-
-
-try:
-    test_function()
-except SystemExit as e:
-    print("caught SystemExit exception!")
-    print("calling display_error!")
-    display_error(e)
-except:
-    print("unknown error occured!")
-
 """
 prototype for profile comparison method
 """
