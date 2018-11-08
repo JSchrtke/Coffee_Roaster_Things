@@ -39,6 +39,90 @@ class Threading(threading.Thread):
         # set method that the thread will run
         self.method_thread_runs = method_thread_runs
 
+Exception.code
+# create ExitException class
+class ExitException(Exception):
+    pass  # TODO: remove pass once ExitException class is done
+
+
+# TODO: create TempProbeCantAttachException class
+class TempProbeCantAttachException(Exception):
+    pass  # TODO: remove pass once TempProbeCantAttachException class is done
+
+
+# TODO: create RoastProfile class
+class RoastProfile():
+    # TODO: create variable to store the largest time value in the reference profile
+    #       Is there a list operation I can use to find the largest time value? Or do I just use
+    #       the value with the biggest/last index?
+    # TODO: create a variable that holds the starting time
+    # TODO: create variable that holds info wether or not the roast is finished; bool
+    # TODO: create a variable that holds the data polling interval
+    #       how is this variable going to be set?
+    # TODO: create variable that holds the last polled time/temperature value pair
+    # TODO: create a variable that holds the last polled time
+    # TODO: create a variable that hold the last polled temperature
+    # TODO: create get_current_time_temp method in RoastProfile class
+    # TODO: create load_reference method in RoastProfile class
+    # TODO: create create_reference method in RoastProfile class
+    # TODO: create start_roast method in the RoastProfile class
+    # TODO: create save_profile_to_file method
+    # TODO: wrap entire function body in while loop that repeats every data polling interval,
+    #       while the roast is not finished
+        # TODO: start_roast needs to have the reference profile as an argument. If a profile is
+        #       passed, do a roast using a reference profile, else do a roast with manual
+        #       temperature input
+        # TODO: set starting time variable to the current time; start_time = time.time()
+        # TODO: if manual roast:
+            # TODO: display menu that controls things during the roast
+                # TODO: option one: Enter new target temperature; this option allows to set a new
+                #       temperature for the roaster to reach and keep; to be used during a manual
+                #       roast
+                # TODO: option two: roast is done: tells the program the current roast is
+                #       finished, probably raises a flag, same as with a rost using a reference
+                #       profile.
+                # TODO: option three: exit program: raise exit program exception
+                    # TODO: create exit program exception
+            # TODO: display the current time in the roast in a seperate window (or subplot in the
+            #       plotting window)
+            # TODO: display the current temperature in a seperate window (or subplot in the
+            #       plotting window)
+            # TODO: display the plot
+            # TODO: every second, call the method to get the current time and temperature;
+            #       get_current_time_temp
+            # TODO: every second, update the plot
+            # TODO: append data from the temporary variables to the logging lists, so the
+            #       live_profile can be saved to file after the roast. Do I save the values
+            #       individually or as a Tuple?
+            # TODO: once the user uses during roast menu option two: roast done, set the roast
+            #       is done variable to true, thus ending the while loop
+        # TODO: if roast with reference:
+            # TODO: display the current time in the roast in a seperate window (or subplot in the
+            #       plotting window)
+            # TODO: display the current temperature in a seperate window (or subplot in the
+            #       plotting window)
+            # TODO: display the plot
+            # TODO: plot the reference profile
+            # TODO: every second, call the method to get the current time and temperature;
+            #       get_current_time_temp
+            # TODO: every second, update the plot
+            # TODO: every second, call the method that compares the live and reference profile.
+                # TODO: create method to compare two profiles in RostProfile class
+                    # TODO: This method needs to check what the largest time value in
+                    #       the reference profile is beforehand
+                    # TODO: method needs to raise a flag once the current_time value of the
+                    #       live_roast is >= to the largest time value in the reference_profile
+                    #       as a signal that the roast is done
+            # TODO: append data from the temporary variables to the logging lists, so the
+            #       live_profile can be saved to file after the roast. Do I save the values
+            #       individually or as a Tuple?
+            # TODO: once the last polled time variable is greater or equal to the maximum time
+            #       in reference variable, set roast is done variable to true, thus ending the
+            #       loop
+    # TODO: once the rost is finished, call method to save the roast; live_profile.save_to_file
+    # TODO: return to main menu
+    pass  # TODO: remove pass once RoastProfile class is done
+
 
 # define the on_attach_handler
 def on_attach_handler(self):
@@ -73,19 +157,7 @@ def on_attach_handler(self):
 
 # define the on_temperature_change_handler
 def on_temperature_change_handler(self, temp):
-    # create a variable that holds the current time
-    current_time = -1
-
-    # create a variable that hold the current temperature
-    current_temp = -1
-
-    # send current time and temperature to the RoastProfile class via one of it's
-    # member method
-    # TODO: put in some method so I dont have to use the live_profile instance of the
-    #       DataProfile class hardcoded in, but rather have it handled some different way.
-    #       Perhaps passing it as an argument could work
-    live_profile.get_time_and_temperature(current_time, current_temp)  # TODO: create get_time_and_temperature method inside RoastProfile class
-    pass
+    temperature = temp
 
 
 # create menu method
@@ -105,40 +177,46 @@ def main_menu():
         print("[3] Start roast")
         print("[4] Exit program")
         # get user choice
-        try:
-            user_menu_choice = input("\n: ")
-            if user_menu_choice == 1:
-                # menu option 1: load reference profile
-                # create a new instance of the roast profile class to hold the reference
-                reference_profile = RoastProfile()  # TODO: create RoastProfile class
-                # call the load_reference method from RoastProfile class
-                reference_profile.load_reference()  # TODO: create load_reference method in RoastProfile class
-                roast_uses_reference = True
-                is_menu_loop_running = False
-            elif user_menu_choice == 2:
-                print("Reference profile creation is not yet implemented!")
-                continue
-                # TODO: main(): menu option 2: create reference profile
-                #       TODO: create create_reference method in RoastProfile class
-                is_menu_loop_running = False
-            elif user_menu_choice == 3:
-                # menu option 3: start roast
-                # run the start_roast method with a reference profile if it was loaded
-                if roast_uses_reference is True:
-                    live_profile.start_roast(reference_profile)  # TODO: create start_roast method in RoastProfile class
-                # run the start_roast method without a reference profile if none was loaded
-                else:
-                    live_profile.start_roast(None)
-                is_menu_loop_running = False
-            elif user_menu_choice == 4:
-                # menu option 4: exit program
-                raise Exception("Exiting...")  # TODO: check if this is the right way to raise exceptions in Python. Maybe create cutom exception class as a child of the base Exception class to be able to quite the program
+        user_menu_choice = input("\n: ")
+        if user_menu_choice == 1:
+            # menu option 1: load reference profile
+            # create a new instance of the roast profile class to hold the reference
+            reference_profile = RoastProfile()
+            # call the load_reference method from RoastProfile class
+            reference_profile.load_reference()
+            roast_uses_reference = True
+            is_menu_loop_running = False
+        elif user_menu_choice == 2:
+            print("Reference profile creation is not yet implemented!")
+            continue
+            # Maybe this feature can be entirely omitted, since I will create reference
+            # profiles by doing manual test roasts for dialing in anyway, which can then be
+            # saved and used as a reference
+            # TODO: main(): option two selected; create reference profile:
+                # TODO: create another instance of the RoastProfile class;
+                #       new_reference_profile
+                # TODO: call new_reference_profile.create_reference to create the new profile
+                # TODO: save the new profile to file by calling the save_profile_to_file
+                #       method from the RoastProfile class
+            is_menu_loop_running = False
+        elif user_menu_choice == 3:
+            # menu option 3: start roast
+            # run the start_roast method with a reference profile if it was loaded
+            if roast_uses_reference is True:
+                live_profile.start_roast(reference_profile)
+            # run the start_roast method without a reference profile if none was loaded
             else:
-                print("Invalid input!")
-                continue
-        except Exception:
+                live_profile.start_roast(None)
+            is_menu_loop_running = False
+        elif user_menu_choice == 4:
+            # menu option 4: exit program
+            raise ExitException("You chose to exit the program")  # TODO: check if this is the right way to raise exceptions in Python. Maybe create cutom exception class as a child of the base Exception class to be able to quite the program
+        else:
             print("Invalid input!")
             continue
+
+
+# TODO: create variable to store wether or not the temperature probe was already attached successfully, so that if you run 
 
 
 # create main()
@@ -163,94 +241,31 @@ def main():
             # open the channel and wait for the attachment event
             temp_sens.openWaitForAttachment(5000)
             attachment_loop_is_running = False  # attachement was successfull
-        except PhidgetException as e:
+        except PhidgetException:
             # if the attachment failed, tell the user it failed
             print("Error in attachment event!")
-            display_error(e)  # TODO: implement error display method
-            # when the attachment fails, the exception handling will increment the fail counter
             attachement_tries_counter += 1
             # tell the user you are retrying to attach the probe
             print("retrying attachment, try # " + str(attachement_tries_counter) + "/3...")
             # retry up to 3 times
             if attachement_tries_counter >= 3:  # attachment failed to many times
                 # if still not successfull, tell user the program needs to be restarted
-                print("Temperature probe could not be attached!\nThe program needs to be"
-                      + "restarted\nExiting...")
                 # terminate the program
                 attachment_loop_running = False
-                raise Exception("Fatal error during attachment process! Exiting...")  # TODO: check if this is the right way to raise an exception that actually stops main()
+                raise TempProbeCantAttachException("\nFatal error during attachment process!"
+                                                   + "\nTemperature probe could not be attached!"
+                                                   + "\nThe program needs to be restarted!"
+                                                   + "\nExiting...")
+        # add wait timer here so that the temperature change handler can collect atleast one
+        # temperature value
+        time.sleep(1)
         # if the attachment is successfull, tell the user it was
         print("Attached!")
 
-
     # show menu
     main_menu()
-
-
-    # Maybe this feature can be entirely omitted, since I will create reference profiles by doing
-    # manual test roasts for dialing in anyway, which can then be saved and used as a reference
-    # TODO: main(): option two selected; create reference profile:
-    #       TODO: create another instance of the RoastProfile class; new_reference_profile
-    #       TODO: call new_reference_profile.create_reference to create the new profile
-    #       TODO: save the new profile to file by calling the save_to_file method from the
-    #             RoastProfile class
-    #             TODO: create method to save a profile to file (which type of file to use?)
-
-    # TODO: main(): option three selected; start roast
-    #       TODO: call live_profile.start_roast
-    #             TODO: create start_roast method in the RoastProfile class
-    #             There needs to be a difference here between a roast controlled by a reference
-    #             profile and one without. Since I will need to be able to run the roaster without a
-    #             reference profile loaded, to find an ideal roast profile for a certain coffee.
-    #             There also needs to be a function to control the temperature manually during the
-    #             roast, so that I'm able to do a manual roast for dialing in for a specific coffee.
-    #             Maybe display a menu the entire time the roast is running, along with the running
-    #             time in the console, which allows entering of a new target temperature that the
-    #             roaster will follow
-    #                   TODO: display menu that controls things during the roast
-    #                         TODO: option one: Enter new target temperature; this option allows to
-    #                               set a new temperature for the roaster to reach and keep; to be
-    #                               used during a manual roast
-    #                         TODO: option two: roast is done: tells the program the current roast
-    #                               is finished, probably raises a flag, same as with a rost using a
-    #                               reference profile
-    #                   TODO: reset the plot so the live roast can be plotted; do I need to stop and
-    #                         restart the plotting thread for this to work? What do I need to do to
-    #                         clear an already existing plot? Can I just close the existing plot and
-    #                         reopen it to reset? can I make it so the x-axis is limited to zero
-    #                         before the roast starts, so all the data that it collected before the
-    #                         roast starts is put into the -x part of the plot and then it continues
-    #                         from 0 to +x from the roast start on out? This would be my prefered
-    #                         method, but it may just be to complicated to be worth it to implement;
-    #                         the easiest way to do this is probably to just close and reopen the
-    #                         plotting window.
-    #                   TODO: plot the reference profile
-    #                   TODO: every second, call the method to get the current temperature;
-    #                         get_current_temp
-    #                         TODO: create get_current_temp method in RoastProfile class
-    #                   TODO: every second, call the method that compares the live and
-    #                         reference profile.
-    #                         TODO: create method to compare two profiles in RostProfile class
-    #                               TODO: This method needs to check what the largest time value in
-    #                                     the reference profile is beforehand
-    #                               TODO: method needs to raise a flag once the current_time value
-    #                                     of the live_roast is >= to the largest time value in the
-    #                                     reference_profile as a signal that the roast is done
-    #                   TODO: start appending data to the logging lists, so the live_profile can be
-    #                         saved to file after the roast
-    #                         TODO: this will have to use a variable to store the values to be
-    #                               compared and not take them straing from the list's/arrays, so
-    #                               that it can be overridden for the purpose of a manual roast
-    #                   How do I detemine the roast is done? When doing a manual roast, there needs
-    #                   to be an option in that menu during the roast to tell the program the roast
-    #                   is finished. When using a reference profile, there needs to be thing in the
-    #                   comparison method that raises a flag once the time value of the live roast
-    #                   has reached >= than the largest time value in the reference profile
-    #                   TODO: once the rost is finished, call method to save the roast;
-    #                         live_profile.save_to_file
-    #                   TODO: return to main menu
-
     pass  # TODO: remove pass once main method is finished
+
 
 # ***********************************************************************************************
 # ************************************program starts here****************************************
@@ -266,7 +281,7 @@ while is_base_thread_running is True:
     temp_sens = TemperatureSensor()
 
     # create an instance of the RoastProfile class for storing the live roast profile;
-    live_profile = RoastProfile()  # TODO: create roast profile class
+    live_profile = RoastProfile()
 
     # create variable that controls if the main() method loop is running
     is_main_thread_running = True
@@ -277,20 +292,19 @@ while is_base_thread_running is True:
         # create second thread for the main program logic, as the live plotting needs to run in
         # it's own thread to function properly, which needs to be the programs base thread
         # aswell.
-        # TODO: wrap this thread in a try/except block to catch any exceptions it might raise
-        # TODO: create exception handling logic to handle any exceptions the main() method might
-        #       raise
-        main_thread = Threading(1, "main-method-thread", main)  # TODO: create main() method, see top
-        main_thread.start()
-
-        # Maybe this entire next part should be omitted for simplicity, so I don't have to deal with
-        # setting up the plot and such, then close it and reopen it. Maybe just show the temperature if
-        # possible, since that window could stay untouched
-        # TODO: Show live plot and current temperature
-        #       TODO: create a variable live_plot to hold an instance of the DataPlot class
-        #             TODO: create DataPlot class
-        #       TODO: call the DataPlot plotting method to show the plot and current temperature
-        #             TODO: create plotting method in DataPlot class
-
+        # wrap this thread in a try/except block to catch any exceptions it might raise.
+        try:
+            main_thread = Threading(1, "main-method-thread", main)
+            main_thread.start()
+            pass  # TODO: remove pass once try block is done
+        except ExitException:
+            # TODO: create exit logic
+            pass  # TODO: remove pass once exit exception thing is done
+        except PhidgetException:
+            # TODO: create PhidgetException handling logic
+            pass  # TODO: remove pass once PhidgetException handling is done
+        except:
+            # anything I might not catch with other exceptions
+            print("\nUnexpected fatal error occured!")
         pass  # TODO: everything except the plotting logic needs to wrapped up in this while loop; remove pass when everything else is done
     pass  # TODO: the entirety of the program needs to be wrapped up in this while loop while the program is supposed to run. Remove this pass once all the rest is done.
