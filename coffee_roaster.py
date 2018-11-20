@@ -18,6 +18,10 @@ from Phidget22.Devices.TemperatureSensor import TemperatureSensor
 # import the Phidget22 Exception library
 from Phidget22.PhidgetException import PhidgetException, ErrorCode
 
+# import the necessary things from matplotlib to do the plotting
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
 
 # create Threading class to handle all the multithreading things, needs to be a subclass of
 # threading.Thred
@@ -50,7 +54,41 @@ class TempProbeCantAttachException(Exception):
         self.details = message
 
 
-# TODO: create LiveProfile class wtf was this meant for? LiveProfile as in Live roast? this can probably go away
+# create LivePlot class
+class LivePlot():
+
+    # create init method
+    def __init__(self):
+        # create an instance of a pyplot figure
+        fig = plt.figure()
+        # add a subplot to the figure
+        ax = fig.add_subplot(1, 1, 1)
+        # set the axis labels
+        ax.set_xlabel("T(s)")
+        ax.set_ylabel("t(°C)")
+
+    # create method to update the live plot
+    def update_live_plot(self):
+        # TODO: what do I need to do with this?
+        pass  # TODO: remove pass once update_live_plot method is finished
+
+    # create method to set the plt animation function
+    def set_animation(self):
+        # TODO: what do I need to do with this?
+        pass  # TODO: remove pass once method is finished
+
+    # create method to plot
+    def plot(self):
+        # TODO: What do I need to do with this?
+        pass #  # TODO: remove pass once methdo is finished
+
+    # TODO: in plotting class, create method to display the current time
+
+    # TODO: in plotting class, create method to display the current temperature
+
+    # TODO: in plotting class, creathe method to display the plot
+
+    pass  # TODO: remove pass once LivePlot class is done
 
 
 # create RoastProfile class
@@ -76,6 +114,10 @@ class RoastProfile():
 
     # create init method
     def __init__(self, data_interval):
+        """
+        initializes the new instance of RoastProfile
+        data_interval: The polling interval for time and temp data
+        """
         # set the data interval
         self.data_polling_interval = data_interval
 
@@ -89,7 +131,7 @@ class RoastProfile():
     # create load_reference method in RoastProfile class
     def load_reference_profile(self):
         # TODO: how is the profile saved? what format? how do I get it out of the file and into
-        #       the respecitve list? 
+        #       the respecitve list?
         pass  # TODO: remove pass once load_reference method is done
 
     # create create_reference method in RoastProfile class
@@ -132,48 +174,42 @@ class RoastProfile():
             #       thread but the main thread. I need to figure out a method for displaying the
             #       plot which get's triggered from this method, but get's called in the
             #       other/base thread so it all works properly.
-                # TODO: display the current time in the roast in a seperate window (or subplot in the
-                #       plotting window)
-                # TODO: display the current temperature in a seperate window (or subplot in the
-                #       plotting window)
-                # TODO: display the plot
                 # TODO: every second, call the method to get the current time and temperature;
                 #       get_current_time_temp
-                # TODO: every second, update the plot
+                # TODO: every second, update the plot; This needs to be done by updating the list
+                #       storing the data, since the update method is not running in the same
+                #       thread as this is.
                 # TODO: append data from the temporary variables to the logging lists, so the
                 #       live_profile can be saved to file after the roast. Do I save the values
                 #       individually or as a Tuple?
-                # TODO: once the user uses during roast menu option two: roast done, set the roast
-                #       is done variable to true, thus ending the while loop
+                # TODO: once the user uses during roast menu option two: roast done, set the
+                #       roast is done variable to true, thus ending the while loop
             # TODO: if roast with reference:
             elif reference_profile is type(RoastProfile):
-                # TODO: display the current time in the roast in a seperate window (or subplot in the
-                #       plotting window)
-                # TODO: display the current temperature in a seperate window (or subplot in the
-                #       plotting window)
-                # TODO: display the plot
                 # TODO: plot the reference profile
                 # TODO: every second, call the method to get the current time and temperature;
                 #       get_current_data
                 # TODO: every second, update the plot
-                # TODO: every second, call the method that compares the live and reference profile.
+                # TODO: every second, call the method that compares the live and reference
+                #       profile.
                     # TODO: create method to compare two profiles in RostProfile class
                         # TODO: This method needs to check what the largest time value in
                         #       the reference profile is beforehand
                         # TODO: method needs to raise a flag once the current_time value of the
-                        #       live_roast is >= to the largest time value in the reference_profile
-                        #       as a signal that the roast is done
+                        #       live_roast is >= to the largest time value in the
+                        #       reference_profile as a signal that the roast is done
                 # TODO: append data from the temporary variables to the logging lists, so the
                 #       live_profile can be saved to file after the roast. Do I save the values
                 #       individually or as a Tuple?
-                # TODO: once the last polled time variable is greater or equal to the maximum time
-                #       in reference variable, set roast is done variable to true, thus ending the
-                #       loop
+                # TODO: once the last polled time variable is greater or equal to the maximum
+                #       time in reference variable, set roast is done variable to true, thus
+                #       ending the loop
                 pass  # TODO: remove pass once the elif is done
             else:
                 # TODO: raise some Exception
                 pass  # TODO: remove pass once the else is done
-        # TODO: once the rost is finished, call method to save the roast; live_profile.save_to_file
+        # TODO: once the rost is finished, call method to save the roast;
+        #       live_profile.save_to_file
         # TODO: return to main menu
         pass  # TODO: remove pass once start_roast method is done
     pass  # TODO: remove pass once RoastProfile class is done
@@ -267,7 +303,7 @@ def main_menu():
             roast_uses_reference = True
             # menu option 1: load reference profile
             # create a new instance of the roast profile class to hold the reference
-            reference_profile = RoastProfile()
+            reference_profile = RoastProfile(1)
             # call the load_reference method from RoastProfile class
             reference_profile.load_reference_profile()
             is_menu_loop_running = False
@@ -355,40 +391,28 @@ def main():
 # ***********************************************************************************************
 # ************************************program starts here****************************************
 # ***********************************************************************************************
-# create a variable that controls if the base thread loop is running
-is_base_thread_running = True
-
-# create a while loop in which the base thread, so the entirety of the program will run
-#       while it's true
-while is_base_thread_running is True:
-
+# wrap the entire program into a try/except block so that all exceptions raised by any methods
+# get handled
+try:
     # create an instance of the Phidget TemperatureSensor object
     temp_sens = TemperatureSensor()
-
-    # create an instance of the RoastProfile class for storing the live roast profile;
+    # create an instance of the the RoastProfile class to be used as the live rost profile
     live_profile = RoastProfile()
-
-    # create variable that controls if the main() method loop is running
-    is_main_thread_running = True
-
-    # create while loop in which the main() method's thread will run while it's true
-    while is_main_thread_running is True:
-
-        # create second thread for the main program logic, as the live plotting needs to run in
-        # it's own thread to function properly, which needs to be the programs base thread
-        # aswell.
-        # wrap this thread in a try/except block to catch any exceptions it might raise.
-        try:
-            main_thread = Threading(1, "main-method-thread", main)
-            main_thread.start()
-            pass  # TODO: remove pass once try block is done
-        except SystemExit as e_exit:
-            display_error(e_exit)
-        except PhidgetException as e_phidget:
-            display_error(e_phidget)
-        except Exception as e:
-            # anything I might not catch with other exceptions
-            print("\nUnexpected fatal error occured!")
-            display_error(e)
-        pass  # TODO: everything except the plotting logic needs to wrapped up in this while loop; remove pass when everything else is done
-    pass  # TODO: the entirety of the program needs to be wrapped up in this while loop while the program is supposed to run. Remove this pass once all the rest is done.
+    # create second thread for the main program logic to run in; everything except the plotting
+    main_thread = Threading(1, "main-method-thread", main)
+    main_thread.start()
+    # TODO: start the plotting here
+        # TODO: display the current time in the roast in a seperate window (or subplot in the
+        #       plotting window)
+        # TODO: display the current temperature in a seperate window (or subplot in the
+        #       plotting window)
+        # TODO: display the plot
+    pass  # TODO: remove pass once try block is done
+except SystemExit as e_exit:
+    display_error(e_exit)
+except PhidgetException as e_phidget:
+    display_error(e_phidget)
+except Exception as e:
+    # anything I might not catch with other exceptions
+    print("\nUnexpected fatal error occured!")
+    display_error(e)
