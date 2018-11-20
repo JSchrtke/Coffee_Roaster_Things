@@ -50,7 +50,7 @@ class TempProbeCantAttachException(Exception):
         self.details = message
 
 
-# TODO: create LiveProfile class
+# TODO: create LiveProfile class wtf was this meant for? LiveProfile as in Live roast? this can probably go away
 
 
 # create RoastProfile class
@@ -101,16 +101,23 @@ class RoastProfile():
         pass  # TODO: remove pass once method is done
 
     # TODO: create manual_roast_menu method
+    def manual_roast_menu(self):
         # TODO: option one: Enter new target temperature; this option allows to set a new
         #       temperature for the roaster to reach and keep; to be used during a manual roast
         # TODO: option two: roast is done: tells the program the current roast is finished,
         #       probably raises a flag, same as with a rost using a reference profile.
         # TODO: option three: exit program: raise exit program exception
+        pass  # TODO: remove pass once manual_roast_menu is finished
 
     # create start_roast method in the RoastProfile class
-    def start_roast(self, reference_profile):
+    def start_roast(self, ref_prof):
+        """
+        ref_prof: an instance of RoastProfile, passed to be the reference profile for the roast
+        """
         # create variable to hold the reference profile
         reference_profile = None
+        # setting reference_profile to the profile passed to start_roast
+        reference_profile = ref_prof
         # wrap entire function body in while loop that repeats every data polling interval, while
         # the roast is not finished
         while self.is_roast_finished is False:
@@ -119,7 +126,7 @@ class RoastProfile():
             # if manual roast:
             if reference_profile is not type(RoastProfile):
                 # display menu that controls things during the roast
-                manual_roast_menu()
+                self.manual_roast_menu()
             # TODO: all the display, so everything that runs things from pyplot needs to run in
             #       the base thread. This all is currently main(), which doesn't run in the base
             #       thread but the main thread. I need to figure out a method for displaying the
@@ -139,6 +146,7 @@ class RoastProfile():
                 # TODO: once the user uses during roast menu option two: roast done, set the roast
                 #       is done variable to true, thus ending the while loop
             # TODO: if roast with reference:
+            elif reference_profile is type(RoastProfile):
                 # TODO: display the current time in the roast in a seperate window (or subplot in the
                 #       plotting window)
                 # TODO: display the current temperature in a seperate window (or subplot in the
@@ -161,6 +169,10 @@ class RoastProfile():
                 # TODO: once the last polled time variable is greater or equal to the maximum time
                 #       in reference variable, set roast is done variable to true, thus ending the
                 #       loop
+                pass  # TODO: remove pass once the elif is done
+            else:
+                # TODO: raise some Exception
+                pass  # TODO: remove pass once the else is done
         # TODO: once the rost is finished, call method to save the roast; live_profile.save_to_file
         # TODO: return to main menu
         pass  # TODO: remove pass once start_roast method is done
@@ -193,6 +205,7 @@ def display_error(self):
             sys.stderr.write("Error: " + str(e))
         else:
             sys.stderr.write("Unknown exception occured!")
+
 
 # define the on_attach_handler
 def on_attach_handler(self):
@@ -233,7 +246,7 @@ def on_temperature_change_handler(self, temp):
 # create menu method
 def main_menu():
     # variable that get's returned by the main_menu() method to let main() know if the roast
-    # uses a reference profile or not
+    # uses a reference profile or not 20181120: Why does main() need to know this? Nothing in main that would use that info
     roast_uses_reference = False
     # wrap menu in while loop that runs until the user made a choice
     # create variable to control the menu loop
@@ -249,16 +262,18 @@ def main_menu():
         # get user choice
         user_menu_choice = input("\n: ")
         if user_menu_choice == 1:
+            # If a reference profile is loaded, the roast uses a reference; set variable
+            # accordingly
+            roast_uses_reference = True
             # menu option 1: load reference profile
             # create a new instance of the roast profile class to hold the reference
             reference_profile = RoastProfile()
             # call the load_reference method from RoastProfile class
-            reference_profile.load_reference()
-            roast_uses_reference = True
+            reference_profile.load_reference_profile()
             is_menu_loop_running = False
         elif user_menu_choice == 2:
             print("Reference profile creation is not yet implemented!")
-            continue
+            continue  # TODO: remove continue once the creation of reference profiles is implemented
             # Maybe this feature can be entirely omitted, since I will create reference
             # profiles by doing manual test roasts for dialing in anyway, which can then be
             # saved and used as a reference
@@ -286,7 +301,7 @@ def main_menu():
             continue
 
 
-# TODO: create variable to store wether or not the temperature probe was already attached successfully, so that if you run 
+# TODO: create variable to store wether or not the temperature probe was already attached successfully, so that if you run 20181120: Run what? learn to finish your fucking comments.
 
 
 # create main()
