@@ -13,13 +13,13 @@ def display_phidget_error(error):
     sys.stderr.write("Description: " + error.details + "\n")
 
     if error.code is ErrorCode.EPHIDGET_NOTATTACHED:
-        sys.stderr.write("\tThis error occurs when a phidget function is called before a"
+        sys.stderr.write("This error occurs when a phidget function is called before a"
                          + "Phidget channel has been opened and attached")
     elif error.code is ErrorCode.EPHIDGET_NOTCONFIGURED:
-        sys.stderr.write("\tThis error occurs when a Phidget function is called before all"
+        sys.stderr.write("This error occurs when a Phidget function is called before all"
                          + "must-set parameters have been set for the channel")
     elif error.code is ErrorCode.EPHIDGET_TIMEOUT:
-        sys.stderr.write("\tThis error occurs when a Phidget device could not be attached "
+        sys.stderr.write("This error occurs when a Phidget device could not be attached "
                          + "within the given wait time. Check the Phidget's connection and try "
                          + "again!")
     else:
@@ -85,3 +85,4 @@ def attach_device(device, attach_handler, temp_change_handler):
     except PhidgetException as e:
         print("\nError in attachment event!")
         display_phidget_error(e)
+        raise SystemExit
