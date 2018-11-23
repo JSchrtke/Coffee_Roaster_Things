@@ -7,6 +7,8 @@ from Phidget22.Phidget import Phidget
 from Phidget22.Devices.TemperatureSensor import TemperatureSensor
 from Phidget22.PhidgetException import PhidgetException, ErrorCode
 
+temp_sensor = -1
+
 while True:
     # create instance of the Phidget Temperature Sensor
     temp_sensor = TemperatureSensor()
@@ -26,7 +28,7 @@ while True:
 
     # show menu
     try:
-        main_menu(live_roast, reference_profile)
+        main_menu(live_roast, reference_profile, temp_sensor)
     except SystemExit:
         sys.stderr.write("\nExiting...")
         break
