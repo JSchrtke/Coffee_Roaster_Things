@@ -1,4 +1,4 @@
-from RoastProfile import *
+from RoastProfile import RoastProfile
 
 
 def main_menu(live_prof, ref_prof, temp_probe):
@@ -19,8 +19,9 @@ def main_menu(live_prof, ref_prof, temp_probe):
         # show options to the user
         print("===== MAIN MENU =====")
         print("[1] Load reference profile")
-        print("[2] Start roast")
-        print("[3] Exit program")
+        print("[2] Start preheating")
+        print("[3] Start roast")
+        print("[4] Exit program")
 
         # get the user choice
         user_menu_choice = -1
@@ -33,17 +34,32 @@ def main_menu(live_prof, ref_prof, temp_probe):
         # do the thing the user chose
         if user_menu_choice == 1:
             # set the variable for the reference profile to an instance of the RoastProfile class
-            # TODO: this may need some exception handling because of the loading of the reference profile in the constructor
             ref_prof = RoastProfile()
             # call import_profile method; should be member of RoastProfile
             ref_prof.import_profile("test.csv")
         elif user_menu_choice == 2:
+            # TODO: create preheating method and call it here
+            print("DEBUG: start preheating was selected")
+        elif user_menu_choice == 3:
             # set the variable for the live roast to an instance of the RoastProfile class
             live_prof = RoastProfile(temp_probe)
             # call start_roast() method from RoastProfile
             live_prof.start_roast(ref_prof)
-        elif user_menu_choice == 3:
+        elif user_menu_choice == 4:
             raise SystemExit
         else:
             print("Invalid input!")
             continue
+
+
+# create method to find a value in a list that is closest to the passed value
+def get_closest_in_list(value, list):
+    """
+    This method finds the value in the passed list that is closest to the passed value and
+    returns it's index
+
+    * value: the value to be used for comparison
+    * list: the list to find the closest match to value in
+    """
+    # TODO: finish this method
+    print("DEBUG: coffee_roaster_helper_functions.get_closest_in_list was called!")
