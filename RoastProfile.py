@@ -1,5 +1,6 @@
 import time
 import sys
+import csv
 
 
 class RoastProfile():
@@ -17,34 +18,35 @@ class RoastProfile():
         self.temperature_target = -1
         # create a variable for the reference data
         self.reference_data = []
+        # create a variable for the current data
+        self.live_data = []
         # create variable to hold the temperature sensor
         self.sensor = temp_probe
 
-    # create load_reference in RoastProfile class
-    def load_reference(self, path):
+    # create import_profile in RoastProfile class
+    def import_profile(self, path):
         """
         Loads an existing roast profile to be used as a reference for another roast
         * path: The path to the roast profile to be used as reference
         """
-        # TODO: figure out how this is supposed to work
         # open the file given
-        with open(str(path)) as file:
-            # read the contents line by line
-            for line in file:
-                # append the line read to the reference_data list
-                self.reference_data.append(file.readline(1))
+        with open(str(path), "r") as file:
+            # create csv reader
+            csv_reader = csv.reader(file)
+            self.reference_data = list(csv_reader)
             # close the reference profile file
             file.close()
-        print("DEBUG: RoastProfile.load_reference() was called; path: " + str(path))  # TODO: remove this once the method is done
+        print("DEBUG: RoastProfile.import_profile() was called; path: " + str(path))  # TODO: remove this once the method is done
         # TODO: DEBUG CODE, REMOVE ONCE DONE!
         for data in self.reference_data:
             print("DEBUG: Index: " + str(self.reference_data.index(data)) + " Data: " + str(data))
 
-    def save_current_profile(self, data_list):
+    def export_profile(self, data_list):
         """
         Saves the current roast to file
         * data_list: A list with the data to be saved
         """
+        # TODO: make some mechanism to have default values for the path and name
         # create variable to hold the path for the profile folder
         path = None
         # create variable for the profile name
@@ -55,10 +57,9 @@ class RoastProfile():
         name = input("Enter a name for the profile to be saved:\n")
         print("Saving profile...")
         # open path/ create file
-        with open(path + name + ".txt", "w") as file:
-            # TODO: for every datapoint in the data list, save it to the file into a new line
-            for data_tuple in data_list:
-                file.write(str(data_tuple))  # TODO: I think this is a really crude way of doing things, this needs some work
+        with open(path + name + ".csv", "w", newline="") as file:  # empty newline is there to prevent the \r
+            csv_app = csv.writer(file, quoting=csv.QUOTE_ALL)
+            csv_app.writerows(data_list)
         file.close()
         print("Saved!")
 
@@ -75,7 +76,7 @@ class RoastProfile():
         Get's the time since a starting point in seconds and returns it
         * time_start: starting time in time_since_epoch format
         """
-        time_current = time_start - time.time()
+        time_current = time.time() - time_start
         return time_current
 
     # TODO: create method to get current temperature
@@ -94,6 +95,7 @@ class RoastProfile():
         reference_profile = ref_prof
         # TODO: finish this method
         # check if there is a reference profile
+
             # if yes:
         if type(reference_profile) == RoastProfile:
             print("DEBUG: There is a reference profile\nDEBUG: roaster is doing things automatically")  # TODO: remove once rest is functional
@@ -101,8 +103,16 @@ class RoastProfile():
             self.time_start = time.time()
             # create variable that holds info wether roast is finished
             is_roast_finished = False
+
+
+            # TODO: DEBUG CODE, REMOVE ONCE DONE
+            debug_while_loop_sentry = 10
+            debug_while_loop_counter = 0
+
+
+
             # every second, do the following:
-            while is_roast_finished is False:
+            while debug_while_loop_counter < debug_while_loop_sentry:  # TODO: CHANGED FOR DEBUG, ORIGINAL LINE IS: while is_roast_finished is False:
                 # create a variable that get's the time at loop start
                 time_at_loop_start = time.time()
                 # get the current time, store in it's variable
@@ -124,7 +134,7 @@ class RoastProfile():
                 # create time and temp tuple
                 data_tuple = (self.time_current, self.temperature_current)
                 # append time and temperature tuple to a list that will be used to later store the profile of the roast
-                self.reference_data.append(data_tuple)
+                self.live_data.append(data_tuple)
                 # TODO: check if the current time is greater or equal than the biggest time value in the reference profile
                     # TODO: if yes, set a variable that is used to check if the roast is finished to true
                     # TODO: if no, repeat unitl it is
@@ -132,22 +142,15 @@ class RoastProfile():
                 time_at_loop_end = time.time()
                 # create mechanism to handle if the time at end is bigger than the time at
                 # start + 1
+                debug_while_loop_counter = debug_while_loop_counter + 1  # TODO: DEBUG LINE, REMOVE
                 try:
                     # make loop wait by the difference to the start time + 1 second and the end time
-                    time.sleep((time_at_loop_start + 1) - time_at_loop_end)
+                    time.sleep(1 - ((time.time() - time_at_loop_start) % 1))
                 except ValueError:
                     print("DEBUG: ValueError was raised at the end of"
-                                     + " RoastProfile.start_roast while loop")
+                          + " RoastProfile.start_roast while loop")
                     continue
-
-
-
-                # TODO: DEBUG CODE, REMOVE ONCE DONE!
-                is_roast_finished = True
-                print("DEBUG: is_roast_finished = True")
-                self.save_current_profile(self.reference_data)
-
-
+            self.export_profile(self.live_data)
 
             # if no:
         else:

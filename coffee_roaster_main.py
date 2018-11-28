@@ -1,8 +1,10 @@
 # import necessary libraries
 import sys
 import time
-from temp_phidget_helper_functions import *
-from coffee_roaster_helper_functions import *
+from temp_phidget_helper_functions import (attach_device, on_attach_handler,
+                                           on_temperature_change_handler)
+from coffee_roaster_helper_functions import main_menu
+from ArduinoInterface import ArduinoInterface
 from Phidget22.Phidget import Phidget
 from Phidget22.Devices.TemperatureSensor import TemperatureSensor
 from Phidget22.PhidgetException import PhidgetException, ErrorCode
@@ -10,6 +12,8 @@ from Phidget22.PhidgetException import PhidgetException, ErrorCode
 temp_sensor = -1
 
 while True:
+    # create an instance of the Arduino interface
+    interface = ArduinoInterface()
     # create instance of the Phidget Temperature Sensor
     temp_sensor = TemperatureSensor()
 
@@ -19,7 +23,6 @@ while True:
     except SystemExit:
         sys.stderr.write("\nExiting...")
         break
-
 
     # create variable that hold the live roast profile
     live_roast = None

@@ -35,8 +35,8 @@ def main_menu(live_prof, ref_prof, temp_probe):
             # set the variable for the reference profile to an instance of the RoastProfile class
             # TODO: this may need some exception handling because of the loading of the reference profile in the constructor
             ref_prof = RoastProfile()
-            # call load_reference method; should be member of RoastProfile
-            ref_prof.load_reference("D:\\Coding\\Coffee_Roaster_Things\\test_profile.txt")
+            # call import_profile method; should be member of RoastProfile
+            ref_prof.import_profile("test.csv")
         elif user_menu_choice == 2:
             # set the variable for the live roast to an instance of the RoastProfile class
             live_prof = RoastProfile(temp_probe)
