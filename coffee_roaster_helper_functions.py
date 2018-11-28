@@ -50,16 +50,3 @@ def main_menu(live_prof, ref_prof, temp_probe):
         else:
             print("Invalid input!")
             continue
-
-
-# create method to find a value in a list that is closest to the passed value
-def get_closest_in_list(value, list):
-    """
-    This method finds the value in the passed list that is closest to the passed value and
-    returns it's index
-
-    * value: the value to be used for comparison
-    * list: the list to find the closest match to value in
-    """
-    # TODO: finish this method
-    print("DEBUG: coffee_roaster_helper_functions.get_closest_in_list was called!")

@@ -1,3 +1,4 @@
+from get_closest_in_list import get_closest_in_list as get_index
 import time
 import sys
 import csv
@@ -19,6 +20,10 @@ class RoastProfile():
         self.temperature_target = -1
         # create a variable for the reference data
         self.reference_data = []
+        # creating a list for the reference time values
+        self.ref_time_values = []
+        # creating a list for the reference temp values
+        self.ref_temp_values = []
         # create a variable for the current data
         self.live_data = []
         # TODO: need to create a list with temperatures and their associated voltages to have it for comparison
@@ -39,7 +44,16 @@ class RoastProfile():
             # close the reference profile file
             file.close()
             # TODO: splitting the reference data up into time and temp in seperate lists
-                # TODO: after splitting, put in a check to see if they still have the same number of elements, just to be sure
+            for value_tuple in self.reference_data:
+                time_val = value_tuple[0]
+                temp_val = value_tuple[1]
+                time_val = float(time_val)
+                temp_val = float(temp_val)
+                self.ref_time_values.append(time_val)
+                self.ref_temp_values.append(temp_val)
+            # TODO: after splitting, put in a check to see if they still have the same number of elements, just to be sure
+            if len(self.ref_time_values) != len(self.ref_temp_values):
+                raise ValueError
         # TODO: DEBUG CODE, REMOVE ONCE DONE!
         for data in self.reference_data:
             print("DEBUG: Index: " + str(self.reference_data.index(data)) + " Data: " + str(data))
@@ -71,10 +85,10 @@ class RoastProfile():
                 print("Saved!")
                 break
             except FileNotFoundError:
-                print("Error! Invalid file path or name! Saving to Desktop as default.csv")
                 path = os.path.abspath(os.path.expanduser("~/Desktop"))
-                name = "default.csv"
+                name = str(time.strftime("%Y%m%d%H%M%S", time.localtime())) + ".csv"
                 file_path_name = os.path.join(path, name)
+                print("Error! Invalid file path or name! Saving to Desktop as " + name)
                 continue
 
     def set_target_temperature(self, temp_value):
@@ -139,6 +153,7 @@ class RoastProfile():
                     # what do I need to do?
                         # compare the current temperature value with the reference temperature value corresponding to the same time
                         # so I need to first get the current time, then find the closest value in the list with the reference times and get it's index
+                get_index(self.time_current, ref_prof.ref_time_values)
                             # this needs to be a general purpose method, probably goes into the helper functions
                         # then get the temperature value with the same index from it's list
                             # put that into the temperature_target variable
