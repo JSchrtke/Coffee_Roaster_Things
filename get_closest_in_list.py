@@ -35,10 +35,6 @@ def get_closest_in_list(ref_val, comp_list, default_smaller=None, default_larger
         else:
             next_larger_than_ref = comp_list[len(comp_list) - 1]
 
-    print("DEBUG: ref_val: " + str(ref_val))
-    print("DEBUG: next_smaller_than_ref: " + str(next_smaller_than_ref))
-    print("DEBUG: next_larger_than_ref: " + str(next_larger_than_ref))
-
     # This second section finds which of the surrounding values is closer
     diff_to_smaller = ref_val - next_smaller_than_ref
     diff_to_larger = next_larger_than_ref - ref_val
@@ -50,7 +46,7 @@ def get_closest_in_list(ref_val, comp_list, default_smaller=None, default_larger
         except ValueError:
             print("No index found for value!")
             return None
-    # this means the roast is over, since there is no time value bigger than ref_val :TODO: check if this works for the other use I had for this method
+    # this means the roast is over, since there is no time value bigger than ref_val
     elif diff_to_larger < 0:
         return (-1)
     # this means there is an exact match

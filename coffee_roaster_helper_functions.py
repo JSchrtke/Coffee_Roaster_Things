@@ -1,4 +1,5 @@
-from RoastProfile import RoastProfile
+import ReferenceProfile
+import LiveProfile
 
 
 def main_menu(live_prof, ref_prof, temp_probe):
@@ -19,9 +20,8 @@ def main_menu(live_prof, ref_prof, temp_probe):
         # show options to the user
         print("===== MAIN MENU =====")
         print("[1] Load reference profile")
-        print("[2] Start preheating")
-        print("[3] Start roast")
-        print("[4] Exit program")
+        print("[2] Start roast")
+        print("[3] Exit program")
 
         # get the user choice
         user_menu_choice = -1
@@ -34,18 +34,23 @@ def main_menu(live_prof, ref_prof, temp_probe):
         # do the thing the user chose
         if user_menu_choice == 1:
             # set the variable for the reference profile to an instance of the RoastProfile class
-            ref_prof = RoastProfile()
-            # call import_profile method; should be member of RoastProfile
-            ref_prof.import_profile("test.csv")
+            ref_prof = ReferenceProfile.ReferenceProfile()
+            # get path to ref profile from user
+            while True:
+                try:
+                    path_to_reference = input("Enter path to reference profile:\n")
+                    break
+                except EOFError:
+                    print("Invalid input!")
+                    continue
+            # call import_profile method
+            ref_prof.import_profile(path_to_reference)
         elif user_menu_choice == 2:
-            # TODO: create preheating method and call it here
-            print("DEBUG: start preheating was selected")
-        elif user_menu_choice == 3:
             # set the variable for the live roast to an instance of the RoastProfile class
-            live_prof = RoastProfile(temp_probe)
+            live_prof = LiveProfile.LiveProfile(temp_probe)
             # call start_roast() method from RoastProfile
-            live_prof.start_roast(ref_prof)
-        elif user_menu_choice == 4:
+            live_prof.do_roast(ref_prof)
+        elif user_menu_choice == 3:
             raise SystemExit
         else:
             print("Invalid input!")
