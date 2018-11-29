@@ -4,12 +4,16 @@ class ArduinoInterface():
     """
     def __init__(self):
         # TODO: There needs to be something here at some point
-        print("DEBUG: called ArduinoInterface.__init__()")
+        pass
 
-    def send_data(self):
-        """
-        This method handles all the data transfer from the roaster program running on a pc to the
-        arduino that controls the heating element and so on
-        """
+    @staticmethod
+    def set_heating_voltage(value):
+        """Send voltage to arduino"""
         # TODO: figure out how this is gonna work
-        print("DEBUG: called ArduinoInterface.send_data()")
+        pass
+
+    @staticmethod
+    def get_heating_voltage():
+        """Return heating voltage from arduino"""
+        voltage_test_val = 123
+        return voltage_test_val
