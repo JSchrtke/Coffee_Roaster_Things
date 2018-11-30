@@ -217,7 +217,9 @@ class LiveProfile(RoastProfile.RoastProfile):
                     self.key = []
                     _thread.start_new_thread(self.do_interrupt_thread, (self.key,))
                     # third loop that gets broken on key press
+                    # every second, do
                     while not self.key:
+                        time_at_loop_start = time.time()
                         # update current temp
                         self.set_temp_current()
 
@@ -241,6 +243,8 @@ class LiveProfile(RoastProfile.RoastProfile):
                               + "\tCurrent voltage: " + str(voltage) + "V"
                               + "\t Target Voltage: " + str(target_voltage) + "V",
                               end="\r")
+                        time_at_loop_end = time.time()
+                        time.sleep(1 - (time_at_loop_end - time_at_loop_start))
 
                     interrupt_logic_value = input("\nNew value:"
                                                   + "\n[q]: for finished roast"
