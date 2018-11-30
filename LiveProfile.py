@@ -1,3 +1,4 @@
+import _thread
 import time
 import csv
 import os
@@ -13,6 +14,10 @@ class LiveProfile(RoastProfile.RoastProfile):
         self.temperature_target = -1
         # create variable that holds the temperature sensor
         self._sensor = temp_probe
+        # list used for the interrup logic in the manual roast mode
+        self.key = []
+        # varibale that check if the roast is done
+        self.is_roast_finished = False
         if self._sensor:
             self.temperature_current = self._sensor.getTemperature()
         super().__init__()
@@ -67,7 +72,7 @@ class LiveProfile(RoastProfile.RoastProfile):
         """return the target temperature"""
         return self.temperature_target
 
-    def compare_current_to_target_temp(self, reference_profile):
+    def get_correction_voltage(self, reference_profile):
         """compare the current temp to target temp, return correction voltage"""
         ref = reference_profile
         # calculate the difference between current and target
@@ -95,8 +100,9 @@ class LiveProfile(RoastProfile.RoastProfile):
         while True:
             if self.temperature_current < self.temperature_target:
                 self.set_temp_current()
-                print("Target temperature: " + str(self.temperature_target	)
-                      + "\tCurrent temperature: " + str(self.temperature_current), end="\r")
+                print("Target temperature: " + str(self.temperature_target) + "°C"
+                      + "\tCurrent temperature: " + str(self.temperature_current) + "°C",
+                      end="\r")
                 continue
             else:
                 break
@@ -107,6 +113,10 @@ class LiveProfile(RoastProfile.RoastProfile):
             except EOFError:
                 print("No!")
                 continue
+
+    def do_interrupt_thread(self, key):
+        input()
+        self.key.append(True)
 
     def do_roast(self, reference_profile=None):
         # TODO: both reference and manual mode need check if there is a reference profile; if there isn't you should load some default profile
@@ -127,33 +137,36 @@ class LiveProfile(RoastProfile.RoastProfile):
             # preheating
             # getting the first temperature value out of the reference profile
             self.set_temp_target(reference_profile.temp_values[0])
-            self.do_preheat(self.temperature_target)
+            self.do_preheat(self.get_temp_target())
 
             # every second, do:
-            is_roast_finished = False
+            self.is_roast_finished = False
             time_at_roast_start = time.time()
-            while is_roast_finished is False:
+            while self.is_roast_finished is False:
                 time_at_loop_start = time.time()
 
                 # update the current temp
                 self.set_temp_current()
 
-                # get the index of the time closest to now from reference
+                # get time at this point in the roast
                 time_in_roast_now = time.time() - time_at_roast_start
+
+                # get the index of the time closest to now from reference
                 time_now_index = get_index(time_in_roast_now, reference_profile.time_values)
                 # end roast
                 if time_now_index == -1:
-                    is_roast_finished = True
+                    self.is_roast_finished = True
                     time_now_index = len(reference_profile.time_values) - 1
 
                 # set the target temp to the temp in reference corresponding with now
                 target_temp_index = time_now_index
-                target_temp = reference_profile.get_val_at_index(target_temp_index,
+                temp_target = reference_profile.get_val_at_index(target_temp_index,
                                                                  reference_profile.temp_values)
-                self.set_temp_target(target_temp)
+                self.set_temp_target(temp_target)
 
-                # compare the target temp to the current temp and get the target voltage for roaster
-                target_voltage = self.compare_current_to_target_temp(reference_profile)
+                # compare the target temp to the current temp and get the target voltage for
+                # roaster
+                target_voltage = self.get_correction_voltage(reference_profile)
 
                 # set the heating voltage to voltage corresponding to target temp
                 ArduinoInterface.ArduinoInterface.set_heating_voltage(target_voltage)
@@ -167,7 +180,7 @@ class LiveProfile(RoastProfile.RoastProfile):
                 # print the relevant data
                 print("Current time: " + str(round(time_in_roast_now, 1)) + "s"
                       + "\tCurrent temperature: " + str(temp) + "°C"
-                      + "\tTarget temperature: " + str(target_temp) + "°C"
+                      + "\tTarget temperature: " + str(temp_target) + "°C"
                       + "\tCurrent voltage: " + str(voltage) + "V"
                       + "\t Target Voltage: " + str(target_voltage) + "V",
                       end="\r")
@@ -190,12 +203,68 @@ class LiveProfile(RoastProfile.RoastProfile):
                 except EOFError:
                     print("Invalid input")
                     continue
-            self.do_preheat(self.temperature_target)
+            self.do_preheat(self.get_temp_target())
+
+            # roast loop
+            self.is_roast_finished = False
+            time_at_roast_start = time.time()
+            while self.is_roast_finished is False:
+                # interrupt logic value, eithe used to set new temp or to finish roast,
+                # gets initialised as temp target
+                interrupt_logic_value = self.get_temp_target()
+                # second loop that gets broken by interrupt logic; when q is passed as new value
+                while True:
+                    self.key = []
+                    _thread.start_new_thread(self.do_interrupt_thread, (self.key,))
+                    # third loop that gets broken on key press
+                    while not self.key:
+                        # update current temp
+                        self.set_temp_current()
+
+                        # get time at this point in the roast
+                        time_in_roast_now = time.time() - time_at_roast_start
+
+                        # compare temps and get correction voltage
+                        target_voltage = self.get_correction_voltage(reference_profile)
+
+                        # get time, temp and voltage and append to data
+                        temp = self.get_temp_current()
+                        temp_target = self.get_temp_target()
+                        voltage = ArduinoInterface.ArduinoInterface.get_heating_voltage()
+                        data_tuple = time_in_roast_now, temp, voltage
+                        self.roast_data.append(data_tuple)
+
+                        # print relevant data
+                        print("Current time: " + str(round(time_in_roast_now, 1)) + "s"
+                              + "\tCurrent temperature: " + str(temp) + "°C"
+                              + "\tTarget temperature: " + str(temp_target) + "°C"
+                              + "\tCurrent voltage: " + str(voltage) + "V"
+                              + "\t Target Voltage: " + str(target_voltage) + "V",
+                              end="\r")
+
+                    interrupt_logic_value = input("\nNew value:"
+                                                  + "\n[q]: for finished roast"
+                                                  + "\n[number]: as new target temperature\n")
+                    # check if roast is finished
+                    if interrupt_logic_value == "q":
+                        self.is_roast_finished = True
+                        break
+                    else:
+                        try:
+                            interrupt_logic_value = float(interrupt_logic_value)
+                            self.set_temp_target(interrupt_logic_value)
+                        except ValueError:
+                            print("Invalid value!")
+                            continue
 
         # invalid user input for mode
         else:
             print("Invalid input! " + mode + " is not a valid mode!")
 
-        # roast done, save data
-        print("\n\nRoast finished!\n")
-        self.export_profile(self.roast_data)
+        if self.is_roast_finished is True:
+            # roast done, save data
+            print("\n\nRoast finished!\n")
+            self.export_profile(self.roast_data)
+        # something went wrong, no finished roast
+        else:
+            pass

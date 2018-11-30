@@ -30,6 +30,9 @@ def main_menu(live_prof, ref_prof, temp_probe):
         except ValueError:
             print("Invalid Input!")
             continue
+        except EOFError:
+            print("Oh no you dont!")
+            continue
 
         # do the thing the user chose
         if user_menu_choice == 1:

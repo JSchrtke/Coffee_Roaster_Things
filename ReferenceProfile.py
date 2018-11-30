@@ -47,7 +47,7 @@ class ReferenceProfile(RoastProfile.RoastProfile):
                 break
             except FileNotFoundError:
                 print("Invalid file path! Using default profile")
-                path = "test.csv"
+                path = "D:\\Coding\\Coffee_Roaster_Things\\test.csv"
                 continue
 
     def get_val_at_index(self, index, value_list):
